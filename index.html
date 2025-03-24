@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de Datos Mostaza</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-hamburger"></i>
+                <h1>Base de Datos Mostaza</h1>
+            </div>
+            <p>Consulta información de locales por su sigla</p>
+        </header>
+
+        <main>
+            <div class="search-box">
+                <input type="text" id="siglaInput" placeholder="Ingresa una sigla (ej: MDB)" autocomplete="off">
+                <button id="searchBtn"><i class="fas fa-search"></i> Buscar</button>
+                <div class="suggestions" id="suggestions"></div>
+            </div>
+
+            <div class="result-card" id="resultCard">
+                <div class="result-header">
+                    <h2 id="localNombre">-</h2>
+                    <span class="sigla" id="localSigla">-</span>
+                </div>
+                <div class="result-details">
+                    <div class="detail-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <span class="detail-label">Provincia:</span>
+                            <span id="localProvincia">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-user-tie"></i>
+                        <div>
+                            <span class="detail-label">Gerente de Zona:</span>
+                            <span id="localGerenteZona">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <span class="detail-label">Gerente de Región:</span>
+                            <span id="localGerenteRegion">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <i class="fas fa-store"></i>
+                    <h3 id="totalLocales">0</h3>
+                    <p>Locales en total</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3 id="totalProvincias">0</h3>
+                    <p>Provincias</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Sistema de consulta de locales - Mostaza © <span id="currentYear"></span></p>
+        </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
