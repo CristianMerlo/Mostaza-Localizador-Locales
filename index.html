@@ -20,12 +20,12 @@
 
         <main>
             <div class="search-box">
-                <input type="text" id="siglaInput" placeholder="Ingresa una sigla (ej: MDB)" autocomplete="off">
-                <button id="searchBtn"><i class="fas fa-search"></i> Buscar</button>
-                <div class="suggestions" id="suggestions"></div>
+                <input type="text" id="siglaInput" placeholder="Ingresa una sigla (ej: MDB)" autocomplete="off" aria-label="Buscar por sigla o nombre de local" aria-controls="suggestions" aria-autocomplete="list">
+                <button id="searchBtn" type="button" aria-label="Buscar local"><i class="fas fa-search"></i> Buscar</button>
+                <div class="suggestions" id="suggestions" role="listbox" aria-label="Sugerencias de locales"></div>
             </div>
 
-            <div class="result-card" id="resultCard">
+            <div class="result-card" id="resultCard" role="region" aria-live="polite" aria-atomic="true" aria-label="Resultado de la búsqueda">
                 <div class="result-header">
                     <h2 id="localNombre">-</h2>
                     <span class="sigla" id="localSigla">-</span>

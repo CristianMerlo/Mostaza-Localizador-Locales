@@ -140,6 +140,12 @@ main {
     background-color: #f5f5f5;
 }
 
+.suggestion-item:focus,
+.suggestion-item.active {
+    outline: 2px solid var(--accent-color);
+    background-color: #f0f8f8;
+}
+
 .result-card {
     background-color: var(--light-color);
     border-radius: var(--border-radius);

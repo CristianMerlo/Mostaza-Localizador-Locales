@@ -20,11 +20,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const localGerenteRegion = document.getElementById('localGerenteRegion');
     
     // Función para buscar local por sigla
+    // Índice por sigla para búsquedas O(1)
+    const siglaIndex = new Map();
+    localesMostaza.forEach(local => {
+        if (local && local.sigla) siglaIndex.set(local.sigla.toUpperCase(), local);
+    });
+
     function buscarLocalPorSigla(sigla) {
-        const localEncontrado = localesMostaza.find(local => 
-            local.sigla.toUpperCase() === sigla.toUpperCase()
-        );
-        
+        const key = sigla.toUpperCase();
+        const localEncontrado = siglaIndex.get(key);
         if (!localEncontrado) {
             return {
                 sigla: sigla,
@@ -38,41 +42,68 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Función para mostrar sugerencias
+    let activeSuggestion = -1;
+
     function mostrarSugerencias(texto) {
         suggestions.innerHTML = '';
-        
-        if (texto.length < 1) {
+        activeSuggestion = -1;
+
+        if (!texto || texto.length < 1) {
             suggestions.style.display = 'none';
+            siglaInput.removeAttribute('aria-activedescendant');
             return;
         }
-        
+
         const textoUpper = texto.toUpperCase();
         const sugerencias = localesMostaza.filter(local => 
-            local.sigla.toUpperCase().includes(textoUpper) || 
-            local.local.toUpperCase().includes(textoUpper)
-        ).slice(0, 5);
-        
+            (local.sigla && local.sigla.toUpperCase().includes(textoUpper)) || 
+            (local.local && local.local.toUpperCase().includes(textoUpper))
+        ).slice(0, 7);
+
         if (sugerencias.length === 0) {
             const div = document.createElement('div');
             div.className = 'suggestion-item not-found';
+            div.setAttribute('role', 'presentation');
             div.textContent = "No se encontraron coincidencias";
             suggestions.appendChild(div);
         } else {
-            sugerencias.forEach(sugerencia => {
+            sugerencias.forEach((sugerencia, idx) => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
+                div.id = `suggestion-${idx}`;
+                div.setAttribute('role', 'option');
+                div.tabIndex = 0; // que sea focusable
                 div.textContent = `${sugerencia.sigla} - ${sugerencia.local}`;
                 div.addEventListener('click', () => {
                     siglaInput.value = sugerencia.sigla;
                     suggestions.style.display = 'none';
+                    activeSuggestion = -1;
                     mostrarResultado(sugerencia);
+                });
+                // permitir seleccionar con teclado cuando el item tenga foco
+                div.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        div.click();
+                    }
                 });
                 suggestions.appendChild(div);
             });
         }
-        
+
         suggestions.style.display = 'block';
     }
+
+    // Debounce utility
+    function debounce(fn, wait) {
+        let t;
+        return function(...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+        };
+    }
+
+    const debouncedMostrarSugerencias = debounce(mostrarSugerencias, 200);
     
     // Función para mostrar resultado
     function mostrarResultado(local) {
@@ -100,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Event listeners
     siglaInput.addEventListener('input', function() {
-        mostrarSugerencias(this.value);
+        debouncedMostrarSugerencias(this.value);
     });
     
     searchBtn.addEventListener('click', function() {
@@ -111,13 +142,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    siglaInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    // Soporte de teclado para navegación en las sugerencias
+    siglaInput.addEventListener('keydown', function(e) {
+        const items = suggestions.querySelectorAll('.suggestion-item:not(.not-found)');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (items.length === 0) return;
+            activeSuggestion = Math.min(activeSuggestion + 1, items.length - 1);
+            items[activeSuggestion].classList.add('active');
+            items[activeSuggestion].focus();
+            siglaInput.setAttribute('aria-activedescendant', items[activeSuggestion].id);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (items.length === 0) return;
+            activeSuggestion = Math.max(activeSuggestion - 1, 0);
+            items.forEach(it => it.classList.remove('active'));
+            items[activeSuggestion].classList.add('active');
+            items[activeSuggestion].focus();
+            siglaInput.setAttribute('aria-activedescendant', items[activeSuggestion].id);
+        } else if (e.key === 'Enter') {
             const sigla = siglaInput.value.trim();
+            // Si hay una sugerencia activa, elegirla
+            if (items.length > 0 && activeSuggestion >= 0) {
+                e.preventDefault();
+                items[activeSuggestion].click();
+                return;
+            }
             if (sigla) {
                 const local = buscarLocalPorSigla(sigla);
                 mostrarResultado(local);
             }
+        } else if (e.key === 'Escape') {
+            suggestions.style.display = 'none';
+            activeSuggestion = -1;
+            siglaInput.removeAttribute('aria-activedescendant');
         }
     });
     
@@ -125,6 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         if (e.target !== siglaInput && e.target !== searchBtn && !suggestions.contains(e.target)) {
             suggestions.style.display = 'none';
+            activeSuggestion = -1;
         }
     });
 });
